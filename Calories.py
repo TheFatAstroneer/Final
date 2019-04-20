@@ -1,5 +1,5 @@
 
-from GetNutrients import *
+from Nutrients import *
 import copy
 
 def calories_need(gender, age, weight, height, activity, goal):
@@ -43,13 +43,13 @@ def categories_existed(food_list):
     return category_set
 
 def check_food(food, food_list):
-    if (food == 0):
-        return False
+    [ID, group_string, name, weight_chosen, amount_chosen, unit_chosen, \
+        nutrition_dict, serving_take] = food
 
-    [name, ID, serving_description, serving_amount, category, energy, energy_unit, carb, protein, \
-        fat, fiber, sugars, unit, servings_take] = food
+    energy = nutrition_dict['208']
 
-    if ('oil' in name) or (energy < 40) or (energy > 500):
+    if ('oil' in name) or (energy < 40) or (energy > 500) or (weight_chosen == 0):
+        #print('check energy: %s, and is %s' %(energy, 'false'))
         return False
 
     # category_set = categories_existed(food_list)
@@ -59,12 +59,13 @@ def check_food(food, food_list):
     return True
 
 
-def meal(macros, calories_limit):
+def meal(macros, calories_limit, tolerance):
     carb_limit, protein_limit, fat_limit = [macro / 3 for macro in macros]
     calories_limit = calories_limit / 3
-    carb_uplim, protein_uplim, fat_uplim = carb_limit * 1.1, protein_limit * 1.1, fat_limit * 1.1
+    uplimit = 1 + tolerance
+    carb_uplim, protein_uplim, fat_uplim = carb_limit * uplimit, protein_limit * uplimit, fat_limit * uplimit
     carb_lowlim, protein_lowlim, fat_lowlim = carb_limit * 0.95, protein_limit * 0.95, fat_limit * 0.95
-    calories_uplim, calories_lowlim = calories_limit * 1.1, calories_limit * 0.95
+    calories_uplim, calories_lowlim = calories_limit * uplimit, calories_limit * 0.95
 
     count = 1
     total = [0.0, 0.0, 0.0, 0.0]
@@ -78,19 +79,23 @@ def meal(macros, calories_limit):
             break
 
         count += 1
-        food = random_food()
-        while (check_food(food, food_list) == False):
-            food = random_food()
+        ID, group, name = random_food()
+        food = get_food_info(ID, group, name)
 
-        [name, ID, serving_description, serving_amount, category, energy, energy_unit, carb, \
-            protein, fat, fiber, sugars, unit, serving_take] = food
+        # pick another food if this one does not pass check
+        while (check_food(food, food_list) == False):
+            ID, group, name = random_food()
+            food = get_food_info(ID, group, name)
+
+        [ID, group_string, name, weight, amount, unit, nut, serving_take] = food
+        energy, carb, protein, fat = nut['208'], nut['205'], nut['203'], nut['204']
 
         new_total = list(map(sum, zip(total, [energy, carb, protein, fat])))
         # Determine how many servings of this food to take
         if (total[0] < calories_uplim) & (total[1] < carb_uplim) & (total[2] < protein_uplim) & \
             (total[3] < fat_uplim):
 
-            serving_max = max(int(200 / serving_amount), 3)
+            serving_max = max(int(200 / (weight * amount)), 3)
             if (serving_max <= 1) or (energy > 200):
                 serving_take = 1
             else:
@@ -114,7 +119,7 @@ def meal(macros, calories_limit):
             for  j in range(0, serving_take):
                 new_total = list(map(sum, zip(new_total, [energy, carb, protein, fat])))
 
-        print('serving_take: %s' %serving_take)
+        #print('energy is %s, serving_take: %s' %(energy, serving_take))
 
         # If taking this food, add to total and append to list
         if (serving_take >= 1):
@@ -127,24 +132,26 @@ def meal(macros, calories_limit):
         protein_diff = abs(total[2] - protein_limit) / protein_limit
         fat_diff = abs(total[3] - fat_limit) / fat_limit
 
-        if (carb_diff > 0.1) or (protein_diff > 0.1) or (fat_diff > 0.1):
-            if (total[0] >= calories_lowlim):
+        if (carb_diff > tolerance) or (protein_diff > tolerance) or (fat_diff > tolerance):
+            if (total[0] >= calories_lowlim) or (total[1] >= carb_lowlim) or (total[2] >= protein_lowlim) or (total[3] >= fat_lowlim):
                 food_list.pop(0)
                 total = [0, 0, 0, 0]
                 for item in food_list:
-                    total = [total[0] + item[5] * item[-1], total[1] + item[7] * item[-1], \
-                        total[2] + item[8] * item[-1], total[3] + item[9] * item[-3]]
+                    nut_this = item[6]
+                    total = [total[0] + nut_this['208'] * item[-1], total[1] + nut_this['205'] * item[-1], \
+                        total[2] + nut_this['203'] * item[-1], total[3] + nut_this['204'] * item[-1]]
         else:
             unbalanced = False
 
 
         print(total)
 
-    print([carb_limit, protein_limit, fat_limit])
-    print(total)
-
+    print([calories_limit, carb_limit, protein_limit, fat_limit])
+    print(food_list)
 
 
 
 if (__name__ == '__main__'):
-    meal(macros_need(calories_need('m', 25, 72, 176, 1.3, 1)), calories_need('m', 25, 72, 176, 1.3, 1))
+    calories_limit = calories_need('m', 25, 72, 176, 1.3, 1)
+    macros = macros_need(calories_limit)
+    meal(macros, calories_limit, 0.16)
