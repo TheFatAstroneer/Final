@@ -31,7 +31,16 @@ class Application(Frame):
         self.hi_there.destroy()
         self.frame = FrameOne(self)
         #self.frame.grid()
-        self.frame.tkraise()
+        #self.frame.tkraise()
+
+    def newFrame2(self, controller):
+        self.newF2 = FrameTwo(self, controller)
+
+
+    def newFrame3(self):
+
+        #self.newF2.grid_forget()
+        self.newFrame = FrameThree(self, '')
 
 
 class FrameOne(Frame):
@@ -167,13 +176,14 @@ class FrameOne(Frame):
 
         self.grid_forget()
 
-        self.newFrame = FrameTwo(self, self.controller)
-        #self.newFrame.tkraise()
+        #self.newFrame = FrameTwo(self, self.controller)
+        self.master.newFrame2(self.controller)
 
 
 class FrameTwo(Frame):
     def __init__(self, master, controller):
-        Frame.__init__(self)
+        Frame.__init__(self, master)
+
         # frame = Frame(master)
         self.grid()
         #self.configure(width = 800, height = 900)
@@ -182,16 +192,16 @@ class FrameTwo(Frame):
         self.add_title()
         self.display_calories()
         self.enter_macros()
-        self.confirm()
+        self.confirm2()
 
     def add_title(self):
-        self.title = Label(text = '            Pick your macros!            ', bg = 'gray', \
+        self.title = Label(self, text = '            Pick your macros!            ', bg = 'gray', \
             font = ('Arial Boad', 30))
         self.title.configure(anchor = 'center', justify = CENTER)
         self.title.grid(row = 0, columnspan = 2, sticky = 'we')
 
     def display_calories(self):
-        separator = Label(height = 3)
+        separator = Label(self, height = 3)
         separator.grid(row = 1)
 
         daily_calories = int(calories_need(self.gender, self.age, self.weight, self.height, \
@@ -199,17 +209,17 @@ class FrameTwo(Frame):
         self.show_calories1 = Label(self, text = 'Your daily calories need is:', font = ('Arial', 20))
         self.show_calories1.grid(row = 2, column = 0)
 
-        self.show_calories2 = Label(text = daily_calories, font = ('Arial Bold', 20))
+        self.show_calories2 = Label(self, text = daily_calories, font = ('Arial Bold', 20))
         self.show_calories2.grid(row = 2, column = 1)
 
-        separator2 = Label(height = 1)
+        separator2 = Label(self,height = 1)
         separator2.grid(row = 3)
 
         meal_calories = int(daily_calories / 3)
-        self.show_calories3 = Label(text = 'Your calories need this meal is:', font = ('Arial', 20))
+        self.show_calories3 = Label(self, text = 'Your calories need this meal is:', font = ('Arial', 20))
         self.show_calories3.grid(row = 4, column = 0)
 
-        self.show_calories4 = Label(text = meal_calories, font = ('Arial Bold', 20))
+        self.show_calories4 = Label(self, text = meal_calories, font = ('Arial Bold', 20))
         self.show_calories4.grid(row = 4, column = 1)
 
     def update_fat(self, event):
@@ -222,57 +232,53 @@ class FrameTwo(Frame):
         this_font = ('Arial', 16)
         self.var_carb, self.var_protein = IntVar(), IntVar()
 
-        self.ask_carb = Label(text = 'Percent calories intake from carbohydrate:', font = this_font)
+        self.ask_carb = Label(self, text = 'Percent calories intake from carbohydrate:', font = this_font)
         self.ask_carb.grid(row = 12, column = 0, sticky = 'e')
-        self.enter_carb = Scale(from_ = 0, to = 60, orient = HORIZONTAL, variable = self.var_carb, font = this_font)
+        self.enter_carb = Scale(self, from_ = 0, to = 60, orient = HORIZONTAL, variable = self.var_carb, font = this_font)
         self.enter_carb.grid(row = 12, column = 1)
 
-        self.ask_protein = Label(text = 'Percent calories intake from protein:', font = this_font)
+        self.ask_protein = Label(self, text = 'Percent calories intake from protein:', font = this_font)
         self.ask_protein.grid(row = 13, column = 0, sticky = 'e')
-        self.enter_protein = Scale(from_ = 0, to = 40, orient = HORIZONTAL, variable = self.var_protein, font = this_font)
+        self.enter_protein = Scale(self, from_ = 0, to = 40, orient = HORIZONTAL, variable = self.var_protein, font = this_font)
         self.enter_protein.grid(row = 13, column = 1)
 
-        separator2 = Label(height = 1)
+        separator2 = Label(self, height = 1)
         separator2.grid(row = 14)
 
-        self.ask_fat = Label(text = 'Percent calories intake from fat:', font = this_font)
+        self.ask_fat = Label(self, text = 'Percent calories intake from fat:', font = this_font)
         self.ask_fat.grid(row = 15, column = 0, sticky = 'e')
-        self.enter_fat = Label(text = '100', font = this_font)
+        self.enter_fat = Label(self, text = '100', font = this_font)
         self.enter_fat.grid(row = 15, column = 1)
 
         self.enter_carb.bind('<ButtonRelease-1>', self.update_fat)
         self.enter_protein.bind('<ButtonRelease-1>', self.update_fat)
 
-    def confirm(self):
-        separator = Label(height = 3)
+    def confirm2(self):
+        separator = Label(self, height = 3)
         separator.grid(row = 20)
 
-        self.enter = Button(text = 'Enter', font = ('Arial', 20))
-        self.enter.grid(row = 21, columnspan = 2)
-        self.enter.configure(command =  self.confirmed())
+        self.enter2 = Button(self, text = 'Enter', font = ('Arial', 20))
+        self.enter2.grid(row = 21, columnspan = 2)
+        self.enter2.bind('<Button-1>', self.confirmed2)
 
-    def confirmed(self):
-        self.controller = [self.var_carb.get(), self.var_protein.get()]
-        self.newFrame = FrameThree(self, self.controller)
-        #self.newFrame.tkraise()
+    def confirmed2(self, event):
+        # self.controller = [self.var_carb.get(), self.var_protein.get()]
+        # self.newFrame = FrameThree(self, self.controller)
+
+        self.grid_forget()
+        self.master.newFrame3()
 
 
 class FrameThree(Frame):
     def __init__(self, master, controller):
-        Frame.__init__(self)
-        master.grid_forget()
-
-        # for widget in self.master.winfo_children():
-        #     widget.destroy()
-
-        #print(master.enter_carb.get())
-
+        Frame.__init__(self, master)
+        #master.frame.destroy()
         self.grid()
 
         self.add_title()
 
     def add_title(self):
-        self.title = Label(text = '            Pick your macros!            ', bg = 'gray', \
+        self.title = Label(self, text = '         Serving your meal...         ', bg = 'gray', \
             font = ('Arial Boad', 30))
         self.title.configure(anchor = 'center', justify = CENTER)
         self.title.grid(row = 0, columnspan = 2, sticky = 'we')
