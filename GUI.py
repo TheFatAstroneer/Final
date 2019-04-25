@@ -5,12 +5,17 @@ except ImportError:
     # for Python3
     from tkinter import *
 
+from Calories import *
+
+
+
+
 class Application(Frame):
 
     def __init__(self, master=None):
         Frame.__init__(self, master)
         #self.configure(width = 400, height = 300, background="bisque")
-        self.master.geometry('600x500')
+        self.master.geometry('600x700')
         self.pack()
         self.createWidgets()
 
@@ -26,18 +31,14 @@ class Application(Frame):
         self.hi_there.destroy()
         self.frame = FrameOne(self)
         #self.frame.grid()
-        self.show_frame(self.frame)
-
-    def show_frame(self, frame):
-        frame.tkraise()
-
+        self.frame.tkraise()
 
 
 class FrameOne(Frame):
 
     def __init__(self, master):
         Frame.__init__(self, master)
-        self.configure(width = 800, height = 900)
+        self.configure(width = 800, height = 1200)
         #self.grid_propagate(0)
         self.grid(sticky = 'wens')
         self.controller = None
@@ -49,6 +50,9 @@ class FrameOne(Frame):
         self.enter_gender()
         self.enter_weight()
         self.enter_height()
+        self.enter_activity()
+        self.enter_goal()
+
         self.confirm()
 
 
@@ -65,10 +69,6 @@ class FrameOne(Frame):
         self.female_button.bind('<Button-1>', self.clicked_female)
 
     def clicked_male(self, event):
-        # self.frame = FrameTwo(self, 'm')
-        # self.frame.pack()
-        # self.frame.tkraise()
-
         self.male_button.configure(bg = 'gray')
         self.male_button.configure(relief = 'sunken')
         self.gender = 'm'
@@ -88,7 +88,7 @@ class FrameOne(Frame):
 
         self.enter_age = Entry(self, width = 15)
         self.enter_age.grid(row = 2, column = 1, pady = 30)
-        self.age = self.enter_age.get()
+
 
     def enter_weight(self):
         self.ask_weight = Label(self, text = 'Please enter your weight(kg):', font = ('Arial', 14))
@@ -96,7 +96,6 @@ class FrameOne(Frame):
 
         self.enter_weight = Entry(self, width = 15)
         self.enter_weight.grid(row = 3, column = 1, pady = 30)
-        self.weight = self.enter_weight.get()
 
     def enter_height(self):
         self.ask_height = Label(self, text = 'Please enter your height(cm):', font = ('Arial', 14))
@@ -104,35 +103,180 @@ class FrameOne(Frame):
 
         self.enter_height = Entry(self, width = 15)
         self.enter_height.grid(row = 4, column = 1, pady = 30)
-        self.height = self.enter_height.get()
+
+    def enter_activity(self):
+        this_font = ('Arial', 14)
+        self.ask_act = Label(self, text = 'Activity level:', font = this_font)
+        self.ask_act.grid(row = 5, column = 0)
+
+        self.var = DoubleVar()
+        self.act1 = Radiobutton(self, text="Not active", variable=self.var, value=1.2, font = this_font)
+        self.act1.grid(row = 5, column = 1)
+        self.act2 = Radiobutton(self, text="Slightly active", variable=self.var, value=1.375, font = this_font)
+        self.act2.grid(row = 6, column = 1)
+        self.act3 = Radiobutton(self, text="Very active", variable=self.var, value=1.55, font = this_font)
+        self.act3.grid(row = 7, column = 1)
+
+    def enter_goal(self):
+        separator = Label(self, height = 1)
+        separator.grid(row = 8)
+
+        this_font = ('Arial', 14)
+        self.ask_goal = Label(self, text = 'What is your goal?', font = this_font)
+        self.ask_goal.grid(row = 9, column = 0)
+
+        self.var2 = DoubleVar()
+        self.goal1 = Radiobutton(self, text="Lose weight", variable=self.var2, value=0.8, font = this_font)
+        self.goal1.grid(row = 9, column = 1)
+        self.goal2 = Radiobutton(self, text="Maintain weight", variable=self.var2, value=1, font = this_font)
+        self.goal2.grid(row = 10, column = 1)
+        self.goal3 = Radiobutton(self, text="Gain active", variable=self.var2, value=1.1, font = this_font)
+        self.goal3.grid(row = 11, column = 1)
+
+        separator2 = Label(self, height = 1)
+        separator2.grid(row = 12)
+
+    def chk_input(self, event):
+        try:
+
+            ## DEBUG:
+            self.age = 25
+            self.weight = 72
+            self.height = 176
+            self.activity = 1.3
+            self.goal = 1.0
+
+            # self.age = float(self.enter_age.get())
+            # self.weight = float(self.enter_weight.get())
+            # self.height = float(self.enter_height.get())
+            # self.activity = float(self.var.get())
+            # self.goal = float(self.var2.get())
+
+            self.confirmed()
+        except ValueError or TypeError:
+            pass
 
     def confirm(self):
         self.enter = Button(self, text = 'Enter', font = ('Arial', 16))
-        self.enter.grid(row = 5, columnspan = 2)
-        self.enter.bind('<Button-1>', self.confirmed)
+        self.enter.grid(row = 20, columnspan = 2)
 
-    def confirmed(self, event):
-        self.controller = self.gender, self.weight, self.height
-        self.newFrame = FrameTwo(self, self.controller, self)
-        self.newFrame.tkraise()
+        self.enter.bind('<Button-1>', self.chk_input)
+
+    def confirmed(self):
+        self.controller = [self.gender, self.age, self.weight, self.height, self.activity, self.goal]
+
+        self.grid_forget()
+
+        self.newFrame = FrameTwo(self, self.controller)
+        #self.newFrame.tkraise()
+
 
 class FrameTwo(Frame):
-    def __init__(self, master, controller, frameOne):
-        Frame.__init__(self, master)
-        frameOne.grid_forget()
-        self.controller = controller
-        self.gender = None
-
-        if (self.controller == 'm'):
-            self.gender = 'm'
-        else:
-            self.gender = 'f'
-
-        self.show()
-
-    def show(self):
-        self.lbl = Label(self, text = 'adsasds:', font = ('Arial', 14))
+    def __init__(self, master, controller):
+        Frame.__init__(self)
+        # frame = Frame(master)
         self.grid()
+        #self.configure(width = 800, height = 900)
+        [self.gender, self.age, self.weight, self.height, self.activity, self.goal] = controller
+
+        self.add_title()
+        self.display_calories()
+        self.enter_macros()
+        self.confirm()
+
+    def add_title(self):
+        self.title = Label(text = '            Pick your macros!            ', bg = 'gray', \
+            font = ('Arial Boad', 30))
+        self.title.configure(anchor = 'center', justify = CENTER)
+        self.title.grid(row = 0, columnspan = 2, sticky = 'we')
+
+    def display_calories(self):
+        separator = Label(height = 3)
+        separator.grid(row = 1)
+
+        daily_calories = int(calories_need(self.gender, self.age, self.weight, self.height, \
+            self.activity, self.goal))
+        self.show_calories1 = Label(self, text = 'Your daily calories need is:', font = ('Arial', 20))
+        self.show_calories1.grid(row = 2, column = 0)
+
+        self.show_calories2 = Label(text = daily_calories, font = ('Arial Bold', 20))
+        self.show_calories2.grid(row = 2, column = 1)
+
+        separator2 = Label(height = 1)
+        separator2.grid(row = 3)
+
+        meal_calories = int(daily_calories / 3)
+        self.show_calories3 = Label(text = 'Your calories need this meal is:', font = ('Arial', 20))
+        self.show_calories3.grid(row = 4, column = 0)
+
+        self.show_calories4 = Label(text = meal_calories, font = ('Arial Bold', 20))
+        self.show_calories4.grid(row = 4, column = 1)
+
+    def update_fat(self, event):
+        self.enter_fat.configure(text = str(100 - self.var_carb.get() - self.var_protein.get()))
+
+    def enter_macros(self):
+        separator = Label(height = 3)
+        separator.grid(row = 11)
+
+        this_font = ('Arial', 16)
+        self.var_carb, self.var_protein = IntVar(), IntVar()
+
+        self.ask_carb = Label(text = 'Percent calories intake from carbohydrate:', font = this_font)
+        self.ask_carb.grid(row = 12, column = 0, sticky = 'e')
+        self.enter_carb = Scale(from_ = 0, to = 60, orient = HORIZONTAL, variable = self.var_carb, font = this_font)
+        self.enter_carb.grid(row = 12, column = 1)
+
+        self.ask_protein = Label(text = 'Percent calories intake from protein:', font = this_font)
+        self.ask_protein.grid(row = 13, column = 0, sticky = 'e')
+        self.enter_protein = Scale(from_ = 0, to = 40, orient = HORIZONTAL, variable = self.var_protein, font = this_font)
+        self.enter_protein.grid(row = 13, column = 1)
+
+        separator2 = Label(height = 1)
+        separator2.grid(row = 14)
+
+        self.ask_fat = Label(text = 'Percent calories intake from fat:', font = this_font)
+        self.ask_fat.grid(row = 15, column = 0, sticky = 'e')
+        self.enter_fat = Label(text = '100', font = this_font)
+        self.enter_fat.grid(row = 15, column = 1)
+
+        self.enter_carb.bind('<ButtonRelease-1>', self.update_fat)
+        self.enter_protein.bind('<ButtonRelease-1>', self.update_fat)
+
+    def confirm(self):
+        separator = Label(height = 3)
+        separator.grid(row = 20)
+
+        self.enter = Button(text = 'Enter', font = ('Arial', 20))
+        self.enter.grid(row = 21, columnspan = 2)
+        self.enter.configure(command =  self.confirmed())
+
+    def confirmed(self):
+        self.controller = [self.var_carb.get(), self.var_protein.get()]
+        self.newFrame = FrameThree(self, self.controller)
+        #self.newFrame.tkraise()
+
+
+class FrameThree(Frame):
+    def __init__(self, master, controller):
+        Frame.__init__(self)
+        master.grid_forget()
+
+        # for widget in self.master.winfo_children():
+        #     widget.destroy()
+
+        #print(master.enter_carb.get())
+
+        self.grid()
+
+        self.add_title()
+
+    def add_title(self):
+        self.title = Label(text = '            Pick your macros!            ', bg = 'gray', \
+            font = ('Arial Boad', 30))
+        self.title.configure(anchor = 'center', justify = CENTER)
+        self.title.grid(row = 0, columnspan = 2, sticky = 'we')
+
 
 root = Tk()
 app = Application(master = root)
