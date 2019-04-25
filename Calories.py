@@ -16,6 +16,7 @@ def calories_need(gender, age, weight, height, activity, goal):
     '''
     Calculates dialy calories need based on a formula that takes into account of
     gender, age, weight, height, and activity level
+    Harris-Benedict equation
 
     goal:
     Weight loss: 0.8
