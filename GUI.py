@@ -6,29 +6,34 @@ except ImportError:
     from tkinter import *
 
 from Calories import *
+from PIL import ImageTk,Image
 
+'''
+To do: Check height, weight inputs
 
+'''
 
 
 class Application(Frame):
 
     def __init__(self, master=None):
         Frame.__init__(self, master)
-        #self.configure(width = 400, height = 300, background="bisque")
         self.master.geometry('600x700')
-        self.pack()
+        self.grid()
         self.createWidgets()
 
     def createWidgets(self):
-        self.hi_there = Button(self, width = 80, height = 40, font = ('Arial Bold', 40))
-        self.hi_there["text"] = "Start"
-        self.hi_there["command"] = self.clicked
 
-        self.hi_there.pack(anchor = CENTER, expand = True, fill = BOTH)
+        self.separator = Label(self, height = 18)
+        self.separator.grid(row = 0)
+
+        self.hi_there = Button(self, text = 'Start', font = ('Arial Bold', 40))
+        self.hi_there.grid(row = 10, sticky = 'WE', padx = 215)
         self.hi_there.bind('<Button-1>', self.clicked)
 
     def clicked(self, event):
         self.hi_there.destroy()
+        self.separator.destroy()
         self.frame = FrameOne(self)
         #self.frame.grid()
         #self.frame.tkraise()
@@ -36,11 +41,9 @@ class Application(Frame):
     def newFrame2(self, controller):
         self.newF2 = FrameTwo(self, controller)
 
+    def newFrame3(self, controller):
 
-    def newFrame3(self):
-
-        #self.newF2.grid_forget()
-        self.newFrame = FrameThree(self, '')
+        self.newF3 = FrameThree(self, controller)
 
 
 class FrameOne(Frame):
@@ -139,7 +142,7 @@ class FrameOne(Frame):
         self.goal1.grid(row = 9, column = 1)
         self.goal2 = Radiobutton(self, text="Maintain weight", variable=self.var2, value=1, font = this_font)
         self.goal2.grid(row = 10, column = 1)
-        self.goal3 = Radiobutton(self, text="Gain active", variable=self.var2, value=1.1, font = this_font)
+        self.goal3 = Radiobutton(self, text="Gain weight", variable=self.var2, value=1.1, font = this_font)
         self.goal3.grid(row = 11, column = 1)
 
         separator2 = Label(self, height = 1)
@@ -201,26 +204,29 @@ class FrameTwo(Frame):
         self.title.grid(row = 0, columnspan = 2, sticky = 'we')
 
     def display_calories(self):
-        separator = Label(self, height = 3)
-        separator.grid(row = 1)
+        self.separator0 = Label(self, height = 3)
+        self.separator0.grid(row = 1)
 
-        daily_calories = int(calories_need(self.gender, self.age, self.weight, self.height, \
+        self.daily_calories = int(calories_need(self.gender, self.age, self.weight, self.height, \
             self.activity, self.goal))
         self.show_calories1 = Label(self, text = 'Your daily calories need is:', font = ('Arial', 20))
         self.show_calories1.grid(row = 2, column = 0)
 
-        self.show_calories2 = Label(self, text = daily_calories, font = ('Arial Bold', 20))
+        self.show_calories2 = Label(self, text = self.daily_calories, font = ('Arial Bold', 20))
         self.show_calories2.grid(row = 2, column = 1)
 
         separator2 = Label(self,height = 1)
         separator2.grid(row = 3)
 
-        meal_calories = int(daily_calories / 3)
+        self.meal_calories = int(self.daily_calories / 3)
         self.show_calories3 = Label(self, text = 'Your calories need this meal is:', font = ('Arial', 20))
         self.show_calories3.grid(row = 4, column = 0)
 
-        self.show_calories4 = Label(self, text = meal_calories, font = ('Arial Bold', 20))
+        self.show_calories4 = Label(self, text = self.meal_calories, font = ('Arial Bold', 20))
         self.show_calories4.grid(row = 4, column = 1)
+
+        self.separator01 = Label(self, height = 4)
+        self.separator01.grid(row = 5)
 
     def update_fat(self, event):
         self.enter_fat.configure(text = str(100 - self.var_carb.get() - self.var_protein.get()))
@@ -234,12 +240,14 @@ class FrameTwo(Frame):
 
         self.ask_carb = Label(self, text = 'Percent calories intake from carbohydrate:', font = this_font)
         self.ask_carb.grid(row = 12, column = 0, sticky = 'e')
-        self.enter_carb = Scale(self, from_ = 0, to = 60, orient = HORIZONTAL, variable = self.var_carb, font = this_font)
+        self.enter_carb = Scale(self, from_ = 10, to = 60, orient = HORIZONTAL, variable = self.var_carb, font = this_font)
+        self.enter_carb.set(55)
         self.enter_carb.grid(row = 12, column = 1)
 
         self.ask_protein = Label(self, text = 'Percent calories intake from protein:', font = this_font)
         self.ask_protein.grid(row = 13, column = 0, sticky = 'e')
-        self.enter_protein = Scale(self, from_ = 0, to = 40, orient = HORIZONTAL, variable = self.var_protein, font = this_font)
+        self.enter_protein = Scale(self, from_ = 10, to = 40, orient = HORIZONTAL, variable = self.var_protein, font = this_font)
+        self.enter_protein.set(25)
         self.enter_protein.grid(row = 13, column = 1)
 
         separator2 = Label(self, height = 1)
@@ -247,7 +255,7 @@ class FrameTwo(Frame):
 
         self.ask_fat = Label(self, text = 'Percent calories intake from fat:', font = this_font)
         self.ask_fat.grid(row = 15, column = 0, sticky = 'e')
-        self.enter_fat = Label(self, text = '100', font = this_font)
+        self.enter_fat = Label(self, text = '20', font = this_font)
         self.enter_fat.grid(row = 15, column = 1)
 
         self.enter_carb.bind('<ButtonRelease-1>', self.update_fat)
@@ -266,23 +274,110 @@ class FrameTwo(Frame):
         # self.newFrame = FrameThree(self, self.controller)
 
         self.grid_forget()
-        self.master.newFrame3()
+        self.master.newFrame3([self.meal_calories, self.var_carb.get(), self.var_protein.get()])
 
 
 class FrameThree(Frame):
     def __init__(self, master, controller):
         Frame.__init__(self, master)
-        #master.frame.destroy()
+        self.master.master.geometry('600x800')
         self.grid()
 
+        # Get calories and percent calories intake from each macro
+        self.controller = controller
+        [self.meal_calories, self.carb_perc, self.protein_perc] = self.controller
+        self.tolerance = 0.15
+
         self.add_title()
+        self.show_meal()
+        self.show_images()
 
     def add_title(self):
-        self.title = Label(self, text = '         Serving your meal...         ', bg = 'gray', \
+        self.title = Label(self, text = '           Serving your meal...           ', bg = 'gray', \
             font = ('Arial Boad', 30))
         self.title.configure(anchor = 'center', justify = CENTER)
         self.title.grid(row = 0, columnspan = 2, sticky = 'we')
 
+    def show_meal(self):
+
+        self.separator = Label(self, height = 3)
+        self.separator.grid(row = 10)
+
+        self.macros_g = macros_need(self.meal_calories, self.carb_perc, self.protein_perc)
+        self.food_list = meal(self.macros_g, self.meal_calories, self.tolerance)
+
+        name_font = ('Arial', 16)
+        serving_font = ('Arial', 12)
+        nut_font = ('Arial', 12)
+        food_count = 0
+        if not (self.food_list == 0):
+            self.img = []
+            # for k in range(0, len(self.food_list)):
+            #     self.img.append(None)
+
+            for food in self.food_list:
+                [ID, group_string, name, amount, unit, weight, nut] = food.get()
+                nut = food.getnut()
+                serving_take = food.serving_take
+
+                # Truncate food name if name is long
+                try:
+                    name_show = name.split(',')[0] + ',' + name.split(',')[1]
+                except:
+                    name_show = name
+
+                # Create label to show food names and nutritions
+                self.food_label = Label(self, text = name_show, font = name_font)
+                self.food_label.grid(row = 10 + food_count * 5, column = 0)
+
+                # Create label show how much of what serving to take for each food
+                if (serving_take == 1):
+                    serving_show = '1 serving: ' + str(amount) + ' ' + unit + ' (' + str(weight) + 'g)'
+                else:
+                    serving_show = '' + str(serving_take) + ' servings: ' + str(amount) + ' ' \
+                        + unit + ' (' + str(weight) + 'g)'
+                self.serving_label = Label(self, text = serving_show, font = serving_font)
+                self.serving_label.grid(row = 11 + food_count * 5, column = 0)
+
+                # Create label to show calories and macros of each food
+                nut_show = str(int(nut[0])) + ' Cal, containing ' + str(int(nut[1])) + 'g carb, ' \
+                    + str(int(nut[2])) + 'g protein, ' + str(int(nut[3])) + 'g fat'
+                self.nut_label = Label(self, text = nut_show, font = nut_font)
+                self.nut_label.grid(row = 12 + food_count * 5, column = 0)
+
+                self.separator2 = Label(self, height = 1)
+                self.separator2.grid(row = 14 + food_count * 5, column = 0)
+                food_count += 1
+
+
+            [cal, carb, protein, fat] = calc_total(self.food_list)
+            self.summary_string1 = 'total calories: ' + str(int(cal))
+            self.summary_string2 = 'carb ' + str(int(carb)) + 'g, protein ' + str(int(protein)) + \
+                'g, fat ' + str(int(fat)) + 'g'
+            self.summary_line1 = Label(self, font = ('Arial Bold', 14), text = self.summary_string1)
+            self.summary_line2 = Label(self, font = ('Arial Bold', 14), text = self.summary_string2)
+            self.summary_line1.grid(row = 5, column = 0)
+            self.summary_line2.grid(row = 6, column = 0)
+
+            self.separator3 = Label(self, height = 2)
+            self.separator3.grid(row = 4, columnspan = 2)
+
+            self.again_button = Button(self, text = 'Try Again', font = ('Arial', 20))
+            self.again_button.grid(row = 5, rowspan = 2, column = 1, sticky = 'w')
+            self.again_button.bind('<Button-1>', self.rerun)
+
+    def show_images(self):
+        food_count = 0
+        for food in self.food_list:
+            self.image = Canvas(self, width = 120, height = 120)
+            self.img.append(ImageTk.PhotoImage(food.pic))
+            self.image.create_image(60, 60, anchor = CENTER, image = self.img[food_count])
+            self.image.grid(row = 10 + food_count * 5, rowspan = 4, column = 1, sticky = 'nswe')
+            food_count += 1
+
+    def rerun(self, event):
+        self.master.newFrame3(self.controller)
+        self.destroy()
 
 root = Tk()
 app = Application(master = root)
