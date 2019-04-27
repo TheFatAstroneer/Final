@@ -4,29 +4,35 @@ import json
 import lxml
 import os
 
-#programtically go through google image ajax json return and save links to list#
-#num_images is more of a suggestion                                            #
-#it will get the ceiling of the nearest 100 if available                       #
+'''
+This script searches images on Google given a query, using urllib to access html and obtain info
+from html pages. The images found on html are saved locally.
+'''
 def get_links(query_string):
-    #initialize place for links
+    '''
+    This method gets links of images found on Googel after searching the query given
+    **Parameters**
+        query_string: *String*
+            The name to be searched on Google Image
+    **Return**
+        links: *list* *String*
+            A list of links of images found
+    '''
+    # Initialize list that stores image links
     links = []
+    # Put query into url that allows Google search
     query_string = query_string.replace(' ','%20')
-
     url="https://www.google.co.in/search?q="+query_string+"&source=lnms&tbm=isch"
-
-    print('URL: %s' %url)
 
     #set user agent to avoid 403 error
     request = Request(url, None, {'User-Agent': 'Mozilla/5.0'})
-    #returns json formatted string of the html
-    json_string = urlopen(request).read()
-
-    new_soup = Soup(json_string, 'lxml')
-
-    #all img tags, only returns results of search
+    #get page info after accessing the url
+    page = urlopen(request).read()
+    #analyze and find all links that directs to images on the web page
+    new_soup = Soup(page, 'lxml')
     imgs = new_soup.find_all('img')
 
-    #loop through images and put src in links list
+    #loop through image links and put those links into the list
     for j in range(len(imgs)):
         this_string  = str(imgs[j])
         if ('src' in this_string):
@@ -37,14 +43,17 @@ def get_links(query_string):
     return links
 
 def get_image(name):
+    '''
+    Access the first image link and download it
+    **Parameters**
+        name: *String*
+            The name to be searched
+    **Return**
+        filename: *String*
+            The directory of the image file downloaded
+    '''
     links = get_links(name)
-
-    #for i in range(len(links)):
     filename, headers = urlretrieve(links[0])
-    #img_name = filename.split('\\')[-1]
-    #os.rename(filename, dest_dir + img_name + '.jpg')
-
-    #return img_name + '.jpg'
     return filename
 
 if __name__ == '__main__':
